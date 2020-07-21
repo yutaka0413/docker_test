@@ -1,0 +1,140 @@
+---
+- hosts: umaster
+  become: yes
+  gather_facts: no
+  tasks:
+
+    - name: Remove apt lock file
+      file:
+        state: absent
+        path: "/var/lib/dpkg/lock"
+    - name: apt update
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        upgrade: false
+      register: apt_result
+    - name: apt upgrade
+      apt:
+        force_apt_get: yes
+        upgrade: true
+
+    - name: debug apt
+      debug:
+        msg: "{{apt_result}}"
+    # - name: Replace a localhost entry with our own
+    #   lineinfile:
+    #     path: /etc/hosts
+    #     regexp: '^127\.0\.0\.1'
+    #     line: "127.0.0.1 {{inventory_hostname}}"
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+    # - name: Replace a localhost entry with hostname
+    #   replace:
+    #     path: /etc/hostname
+    #     regexp: '^(.+)$'
+    #     replace: ''
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+    # - name: Insert a hostname node
+    #   lineinfile:
+    #     path: /etc/hostname
+    #     # regexp: '^127\.0\.0\.1'
+    #     line: "{{inventory_hostname}}"
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+    # - name: set hostname
+    #   hostname:
+    #     name: "{{inventory_hostname}}"
+
+
+    - name: search word
+      lineinfile:
+        path: /boot/firmware/cmdline.txt
+        regexp: " cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 swapaccount=1"
+        state: absent
+      check_mode: yes
+      changed_when: false
+      register: intheline
+
+    # - name: debug
+    #   debug:
+    #     msg: "{{intheline}}"
+    - name: Replace a cmdline with our own
+      lineinfile:
+        path: /boot/firmware/cmdline.txt
+        line: " cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 swapaccount=1"
+      when: not intheline.found
+    - name: replace kaigyo
+      replace:
+        path: /boot/firmware/cmdline.txt
+        regexp: \n
+        replace: ''
+      when: not intheline.found
+    - name: reboot the machine with all defaults
+      reboot:
+      changed_when: false
+
+    - name: add user you
+      user:
+        name: you
+        groups: sudo
+        append: yes
+
+    - name: Set authorized key taken from file
+      authorized_key:
+        user: you
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: install docker
+      shell: curl -sSL get.docker.com | sh
+      args:
+        warn: no
+
+    - name: add user you to docker
+      user:
+        name: you
+        groups: docker
+        append: yes
+
+    - name: add user ubuntu to docker
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Check that the daemon.json exists
+      stat:
+        path: /etc/docker/daemon.json
+      register: stat_result
+
+    - name: Insert a daemon.json
+      copy:
+        src: daemon.json
+        dest: /etc/docker/daemon.json
+        force: yes
+    - name: search line
+      stat:
+        path: /etc/apt/sources.list.d/kubernetes.list
+      register: stat_result
+
+    - name: add line
+      lineinfile:
+        path: /etc/apt/sources.list.d/kubernetes.list
+        line:  deb http://apt.kubernetes.io/ kubernetes-xenial main
+        insertbefore: EOF
+        create: yes
+      when: not stat_result.stat.exists
+
+    - name: Add kubernetes GPG apt Key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'kubeadm', 'kubectl','kubelet']
