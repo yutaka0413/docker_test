@@ -1,2 +1,2 @@
 [umaster]
-u-master ansible_ssh_host=192.168.3.20 ansible_connection=ssh ansible_user=ubuntu
+u-master ansible_ssh_host=192.168.11.40 ansible_connection=ssh ansible_user=ubuntu

@@ -22,33 +22,33 @@
     - name: debug apt
       debug:
         msg: "{{apt_result}}"
-    # - name: Replace a localhost entry with our own
-    #   lineinfile:
-    #     path: /etc/hosts
-    #     regexp: '^127\.0\.0\.1'
-    #     line: "127.0.0.1 {{inventory_hostname}}"
-    #     owner: root
-    #     group: root
-    #     mode: '0644'
-    # - name: Replace a localhost entry with hostname
-    #   replace:
-    #     path: /etc/hostname
-    #     regexp: '^(.+)$'
-    #     replace: ''
-    #     owner: root
-    #     group: root
-    #     mode: '0644'
-    # - name: Insert a hostname node
-    #   lineinfile:
-    #     path: /etc/hostname
-    #     # regexp: '^127\.0\.0\.1'
-    #     line: "{{inventory_hostname}}"
-    #     owner: root
-    #     group: root
-    #     mode: '0644'
-    # - name: set hostname
-    #   hostname:
-    #     name: "{{inventory_hostname}}"
+    - name: Replace a localhost entry with our own
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.0\.1'
+        line: "127.0.0.1 {{inventory_hostname}}"
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Replace a localhost entry with hostname
+      replace:
+        path: /etc/hostname
+        regexp: '^(.+)$'
+        replace: ''
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Insert a hostname node
+      lineinfile:
+        path: /etc/hostname
+        # regexp: '^127\.0\.0\.1'
+        line: "{{inventory_hostname}}"
+        owner: root
+        group: root
+        mode: '0644'
+    - name: set hostname
+      hostname:
+        name: "{{inventory_hostname}}"
 
 
     - name: search word
@@ -137,4 +137,4 @@
 
     - name: Install required system packages
       apt: name={{ item }} state=latest update_cache=yes
-      loop: [ 'kubeadm', 'kubectl','kubelet']
+      loop: [ 'kubeadm', 'kubectl','kubelet','docker-compose']
