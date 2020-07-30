@@ -137,4 +137,4 @@
 
     - name: Install required system packages
       apt: name={{ item }} state=latest update_cache=yes
-      loop: [ 'kubeadm', 'kubectl','kubelet','docker-compose']
+      loop: [ 'kubeadm', 'kubectl','kubelet','docker-compose','bridge-utils']
